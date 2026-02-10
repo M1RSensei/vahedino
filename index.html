@@ -745,6 +745,25 @@ table td:nth-child(2) {
     height: 20px;
 }
 
+        /* استایل برای دروس بدون زمان */
+        .course-no-time {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+            background: rgba(136, 144, 151, 0.2) !important;
+        }
+        
+        .course-no-time:hover {
+            transform: none !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        }
+        
+        .time-warning {
+            color: #ff9800;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: block;
+        }
+
     </style>
     </head>
     <header class="header">
@@ -763,31 +782,17 @@ table td:nth-child(2) {
                 </svg>
                 تلگرام
             </a>
-            <!--<a href="https://github.com/vahedino" target="_blank" style="color: #ffffff; text-decoration: none; display: flex; align-items: center; gap: 4px; font-size: 14px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                گیت‌هاب
-            </a>-->
         </div>
     </header>
     
 
     <body>
-        <!--<div class="navbar">
-            <button class="tab1 active"
-                onclick="switchProgram(1)">واحدینو</button>
-            <button class="tab" id="addProgramButton"
-                onclick="addNewProgram()">(نسخه بتا)</button>
-    </div>
-    
-        
-    <p class="dis">دستیار انتخاب واحد خواجه نصیر</p><br>-->
-
         <div class="container">
             <div class="sidebar">
                 <select id="departmentSelect" class="department-select"
                     onchange="filterCoursesByDepartment()">
                     <option value>کلیه دانشکده ها</option>
-                    <option value="مهندسی نقشه برداری">مهندسي نقشه
+                    <option value="دانشکده نقشه برداری">مهندسي نقشه
                         برداري</option>
                     <option value="مهندسی عمران">مهندسي عمران</option>
                     <option value="مهندسی کامپیوتر">مهندسي کامپیوتر</option>
@@ -837,9 +842,6 @@ table td:nth-child(2) {
 
         </div>
 
-        <!--<p>میدونیم هنوز تا بهتر شدن خیلی فاصله داریم ولی داریم سعی خودمون رو
-            میکنیم تا شما تجربه بهتری از این برنامه داشته باشید! </p>-->
-        <p>© ساخته شده با 💚 توسط گروه توسعه فناوری <a style="text-decoration: none;color:#00D890;" href="https://Nasirino.ir"> نصیرینو</a></p><br>
         <script src="list.js"></script>
         
         <script>
@@ -881,132 +883,77 @@ window.addEventListener('load', setViewport);
             updateSchedule();
             updateUnits();
         }
+
+        function hasValidTime(course) {
+            // بررسی وجود sessions
+            if (!course.sessions || course.sessions.length === 0) {
+                return false;
+            }
+            
+            // بررسی هر جلسه
+            for (const session of course.sessions) {
+                // بررسی وجود start و days
+                if (session.start === undefined || session.start === null || 
+                    !session.days || session.days.length === 0) {
+                    return false;
+                }
+                
+                // بررسی اینکه start یک عدد معتبر باشد
+                if (typeof session.start !== 'number' || session.start <= 0) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
         function selectCourse(course) {
-    const currentProgram = programs.find(p => p.id === currentProgramId);
-    const totalUnits = currentProgram.selectedCourses.reduce((sum, c) => sum + c.units, 0);
+            // بررسی اینکه درس زمان مشخص دارد یا نه
+            if (!hasValidTime(course)) {
+                alert('این درس زمان مشخصی ندارد و قابل اضافه کردن به برنامه نیست');
+                return;
+            }
 
-    // Check if course is already selected
-    if (currentProgram.selectedCourses.some(c => c.code === course.code)) {
-        alert('این درس قبلاً انتخاب شده است');
-        return;
-    }
+            const currentProgram = programs.find(p => p.id === currentProgramId);
+            const totalUnits = currentProgram.selectedCourses.reduce((sum, c) => sum + c.units, 0);
 
-    // Check total units
-    if (totalUnits + course.units > 24) {
-        alert('مجموع واحدها نمی‌تواند بیشتر از ۲۴ باشد');
-        return;
-    }
+            // Check if course is already selected
+            if (currentProgram.selectedCourses.some(c => c.code === course.code)) {
+                alert('این درس قبلاً انتخاب شده است');
+                return;
+            }
 
-    // Check time conflicts
-    const conflictingCourse = currentProgram.selectedCourses.find(selectedCourse => {
-        return selectedCourse.sessions.some(selectedSession => {
-            return course.sessions.some(newSession => {
-                return selectedSession.days.some(selectedDay => {
-                    return newSession.days.includes(selectedDay) && 
-                           !(newSession.start >= (selectedSession.start + selectedSession.duration) || 
-                             (newSession.start + newSession.duration) <= selectedSession.start);
+            // Check total units
+            if (totalUnits + course.units > 24) {
+                alert('مجموع واحدها نمی‌تواند بیشتر از ۲۴ باشد');
+                return;
+            }
+
+            // Check time conflicts
+            const conflictingCourse = currentProgram.selectedCourses.find(selectedCourse => {
+                return selectedCourse.sessions.some(selectedSession => {
+                    return course.sessions.some(newSession => {
+                        return selectedSession.days.some(selectedDay => {
+                            return newSession.days.includes(selectedDay) && 
+                                   !(newSession.start >= (selectedSession.start + selectedSession.duration) || 
+                                     (newSession.start + newSession.duration) <= selectedSession.start);
+                        });
+                    });
                 });
             });
-        });
-    });
 
-    if (conflictingCourse) {
-        alert(`تداخل زمانی با درس ${conflictingCourse.name}`);
-        return;
-    }
-
-    // Add course if all checks pass
-    currentProgram.selectedCourses.push(course);
-    updateSchedule();
-    updateUnits();
-    saveToLocalStorage();
-}
-// Add this to handle course data updates
-function syncSelectedCourses() {
-    // Get all programs
-    programs = JSON.parse(localStorage.getItem('programs')) || [{id: 1, selectedCourses: []}];
-    
-    // Update each program's courses
-    programs = programs.map(program => {
-        program.selectedCourses = program.selectedCourses.map(selectedCourse => {
-            // Get fresh data from courses array
-            const freshCourse = courses.find(c => c.code === selectedCourse.code);
-            if (freshCourse) {
-                return {
-                    ...freshCourse,
-                    sessions: freshCourse.sessions
-                };
+            if (conflictingCourse) {
+                alert(`تداخل زمانی با درس ${conflictingCourse.name}`);
+                return;
             }
-            return selectedCourse;
-        });
-        return program;
-    });
 
-    // Save updated data
-    localStorage.setItem('programs', JSON.stringify(programs));
-    
-    // Refresh display
-    updateSchedule();
-    filterCoursesByDepartment();
-}
+            // Add course if all checks pass
+            currentProgram.selectedCourses.push(course);
+            updateSchedule();
+            updateUnits();
+            saveToLocalStorage();
+        }
 
-// Call this after modifying courses array
-// Add this function to handle automatic course updates
-function autoUpdateCourses() {
-    const currentProgram = programs.find(p => p.id === currentProgramId);
-    
-    // Update each selected course with latest data
-    currentProgram.selectedCourses = currentProgram.selectedCourses.map(selectedCourse => {
-        const updatedCourse = courses.find(c => c.code === selectedCourse.code);
-        return updatedCourse || selectedCourse;
-    });
-
-    // Update storage and display
-    localStorage.setItem('programs', JSON.stringify(programs));
-    updateSchedule();
-}
-
-// Call this function after modifying course data
-function refreshSchedule() {
-    autoUpdateCourses();
-    filterCoursesByDepartment();
-}
-// Add this function to sync course data
-function syncCourses() {
-    // Get current program
-    let currentProgram = programs.find(p => p.id === currentProgramId);
-    
-    // Update selected courses with fresh data
-    if (currentProgram && currentProgram.selectedCourses) {
-        currentProgram.selectedCourses = currentProgram.selectedCourses.map(selectedCourse => {
-            // Find matching course from master list
-            const freshData = courses.find(c => c.code === selectedCourse.code);
-            if (freshData) {
-                return {
-                    ...freshData,
-                    id: selectedCourse.id // Preserve original ID
-                };
-            }
-            return selectedCourse;
-        });
-    }
-
-    // Save changes
-    localStorage.setItem('programs', JSON.stringify(programs));
-    
-    // Refresh display
-    updateSchedule();
-    filterCoursesByDepartment();
-}
-
-// Call this after updating courses array
-function refreshAll() {
-    syncCourses();
-}
-
-
-
-      
         function removeCourseById(courseId) {
             const currentProgram = programs.find(p => p.id === currentProgramId);
             currentProgram.selectedCourses = currentProgram.selectedCourses.filter(c => c.id !== courseId);
@@ -1015,54 +962,37 @@ function refreshAll() {
             updateUnits();
             saveToLocalStorage();
         }
+        
         function updateSchedule() {
-    document.querySelectorAll('td').forEach(td => {
-        if (!/\d+:\d+/.test(td.textContent)) td.innerHTML = '';
-    });
-
-    const currentProgram = programs.find(p => p.id === currentProgramId);
-    currentProgram.selectedCourses.forEach(course => {
-        if (course.sessions) {
-            // برای دروس چند جلسه‌ای
-            course.sessions.forEach(session => {
-                session.days.forEach(day => {
-                    const rowIndex = Array.from(document.querySelectorAll('#scheduleBody tr')).findIndex(
-                        row => row.querySelector('td').textContent === formatTime(session.start)
-                    );
-                    if (rowIndex !== -1) {
-                        const row = document.querySelector(`#scheduleBody tr:nth-child(${rowIndex + 1})`);
-                        const cell = row.children[day];
-                        const heightInRows = Math.ceil(session.duration / 1.5);
-                        cell.innerHTML += `
-                            <div class="selected-course" style="height: ${heightInRows * 100}%">
-                                <span>${course.name} (${course.code})<br>${course.prof}</span>
-                                <button class="remove-course" onclick="removeCourseById(${course.id})">&times;</button>
-                            </div>
-                        `;
-                    }
-                });
+            document.querySelectorAll('td').forEach(td => {
+                if (!/\d+:\d+/.test(td.textContent)) td.innerHTML = '';
             });
-        } else {
-            // برای دروس تک جلسه‌ای (ساختار قبلی)
-            course.days.forEach(day => {
-                const rowIndex = Array.from(document.querySelectorAll('#scheduleBody tr')).findIndex(
-                    row => row.querySelector('td').textContent === formatTime(course.start)
-                );
-                if (rowIndex !== -1) {
-                    const row = document.querySelector(`#scheduleBody tr:nth-child(${rowIndex + 1})`);
-                    const cell = row.children[day];
-                    const heightInRows = Math.ceil(course.duration / 1.5);
-                    cell.innerHTML += `
-                        <div class="selected-course" style="height: ${heightInRows * 100}%">
-                            <span>${course.name} (${course.code})<br>${course.prof}</span>
-                            <button class="remove-course" onclick="removeCourseById(${course.id})">&times;</button>
-                        </div>
-                    `;
+
+            const currentProgram = programs.find(p => p.id === currentProgramId);
+            currentProgram.selectedCourses.forEach(course => {
+                if (course.sessions) {
+                    // برای دروس چند جلسه‌ای
+                    course.sessions.forEach(session => {
+                        session.days.forEach(day => {
+                            const rowIndex = Array.from(document.querySelectorAll('#scheduleBody tr')).findIndex(
+                                row => row.querySelector('td').textContent === formatTime(session.start)
+                            );
+                            if (rowIndex !== -1) {
+                                const row = document.querySelector(`#scheduleBody tr:nth-child(${rowIndex + 1})`);
+                                const cell = row.children[day];
+                                const heightInRows = Math.ceil(session.duration / 1.5);
+                                cell.innerHTML += `
+                                    <div class="selected-course" style="height: ${heightInRows * 100}%">
+                                        <span>${course.name} (${course.code})<br>${course.prof}</span>
+                                        <button class="remove-course" onclick="removeCourseById(${course.id})">&times;</button>
+                                    </div>
+                                `;
+                            }
+                        });
+                    });
                 }
             });
         }
-    });
-}
 
         function updateUnits() {
             const currentProgram = programs.find(p => p.id === currentProgramId);
@@ -1070,145 +1000,167 @@ function refreshAll() {
             document.getElementById('units').textContent = total;
         }
 
-        
-
-        
-function saveToLocalStorage() {
-    localStorage.setItem('programs', JSON.stringify(programs));
-}
-
-// Add gender property to course display
-function filterCoursesByDepartment() {
-    const departmentSelect = document.getElementById('departmentSelect');
-    const selectedDepartment = departmentSelect.value;
-    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-    const courseList = document.getElementById('courseList');
-    courseList.innerHTML = '';
-
-    courses
-        .filter(course => 
-            (selectedDepartment === '' || course.department === selectedDepartment) &&
-            (course.name.toLowerCase().includes(searchTerm) || course.code.toLowerCase().includes(searchTerm))
-        )
-        .forEach(course => {
-            const div = document.createElement('div');
-            div.className = 'course';
-            
-            // Enhanced course information display including notes
-            div.innerHTML = `
-                <div class="course-header">
-                    <strong>${course.name}</strong> (${course.code})
-                </div>
-                <div class="course-details">
-                    <div>استاد: ${course.prof}</div>
-                    <div>واحد: ${course.units}</div>
-                    <div>دانشکده: ${course.department}</div>
-                    <div>زمان امتحان: ${course.examDate}</div>
-                    <div class="course-sessions">
-                        ${course.sessions.map(session => 
-                            `${session.location}<br>
-                             ${session.days.map(day => ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه'][day-1]).join(', ')}
-                             ${formatTime(session.start)}-${formatTime(session.start + session.duration)}`
-                        ).join('<br>')}
-                    </div>
-                    <div class="course-notes">
-                        ظرفیت: ${course.capacity} نفر
-                        ${course.gender ? `<br>جنسیت: ${course.gender}` : ''}
-                    </div>
-                </div>
-            `;
-            
-            div.onclick = () => selectCourse(course);
-            courseList.appendChild(div);
-        });
-}
-
-function filterCourses() {
-    const searchTerm = document.getElementById('searchBox').value.trim().toLowerCase();
-    const departmentSelect = document.getElementById('departmentSelect');
-    const selectedDepartment = departmentSelect.value;
-    const courseList = document.getElementById('courseList');
-    courseList.innerHTML = '';
-
-    const searchParts = searchTerm.split(/\s+/);
-
-    const filteredCourses = courses.filter(course => {
-        if (selectedDepartment && course.department !== selectedDepartment) {
-            return false;
+        function saveToLocalStorage() {
+            localStorage.setItem('programs', JSON.stringify(programs));
         }
 
-        if (!searchTerm) {
-            return true;
+        function filterCoursesByDepartment() {
+            const departmentSelect = document.getElementById('departmentSelect');
+            const selectedDepartment = departmentSelect.value;
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const courseList = document.getElementById('courseList');
+            courseList.innerHTML = '';
+
+            courses
+                .filter(course => 
+                    (selectedDepartment === '' || course.department === selectedDepartment) &&
+                    (course.name.toLowerCase().includes(searchTerm) || course.code.toLowerCase().includes(searchTerm))
+                )
+                .forEach(course => {
+                    const div = document.createElement('div');
+                    div.className = 'course';
+                    
+                    // بررسی آیا درس زمان مشخص دارد
+                    const hasTime = hasValidTime(course);
+                    if (!hasTime) {
+                        div.classList.add('course-no-time');
+                    }
+                    
+                    // Enhanced course information display including notes
+                    div.innerHTML = `
+                        <div class="course-header">
+                            <strong>${course.name}</strong> (${course.code})
+                        </div>
+                        <div class="course-details">
+                            <div>استاد: ${course.prof}</div>
+                            <div>واحد: ${course.units}</div>
+                            <div>دانشکده: ${course.department}</div>
+                            <div>زمان امتحان: ${course.examDate}</div>
+                            ${hasTime ? `
+                                <div class="course-sessions">
+                                    ${course.sessions.map(session => 
+                                        `${session.location}<br>
+                                         ${session.days.map(day => ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه'][day-1]).join(', ')}
+                                         ${formatTime(session.start)}-${formatTime(session.start + session.duration)}`
+                                    ).join('<br>')}
+                                </div>
+                            ` : '<span class="time-warning">⏰ زمان این درس مشخص نشده</span>'}
+                            <div class="course-notes">
+                                ظرفیت: ${course.capacity} نفر
+                                ${course.gender ? `<br>جنسیت: ${course.gender}` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // تنظیم رویداد کلیک
+                    if (hasTime) {
+                        div.onclick = () => selectCourse(course);
+                    } else {
+                        div.onclick = () => alert('این درس زمان مشخصی ندارد و قابل اضافه کردن به برنامه نیست');
+                    }
+                    
+                    courseList.appendChild(div);
+                });
         }
 
-        const searchableText = [
-            course.name,
-            course.code,
-            course.prof,
-            course.department
-        ].join(' ').toLowerCase();
+        function filterCourses() {
+            const searchTerm = document.getElementById('searchBox').value.trim().toLowerCase();
+            const departmentSelect = document.getElementById('departmentSelect');
+            const selectedDepartment = departmentSelect.value;
+            const courseList = document.getElementById('courseList');
+            courseList.innerHTML = '';
 
-        return searchParts.some(part => searchableText.includes(part));
-    });
+            const searchParts = searchTerm.split(/\s+/);
 
-    filteredCourses.forEach(course => {
-        const div = document.createElement('div');
-        div.className = 'course';
-        div.innerHTML = `${course.name} (${course.code})<br>${course.prof}<br>${course.units} واحد<br>${course.department}`;
-        div.onclick = () => selectCourse(course);
-        courseList.appendChild(div);
-    });
-}
+            const filteredCourses = courses.filter(course => {
+                if (selectedDepartment && course.department !== selectedDepartment) {
+                    return false;
+                }
 
+                if (!searchTerm) {
+                    return true;
+                }
 
-function switchProgram(programId) {
-    currentProgramId = programId;
-    updateSchedule();
-    updateUnits();
-}
+                const searchableText = [
+                    course.name,
+                    course.code,
+                    course.prof,
+                    course.department
+                ].join(' ').toLowerCase();
 
-function addNewProgram() {
-    const newProgramId = programs.length > 0 ? Math.max(...programs.map(p => p.id)) + 1 : 1;
-    const newProgram = { id: newProgramId, selectedCourses: [] };
-    programs.push(newProgram);
-    
-    // Update tabs
-    const addProgramButton = document.getElementById('addProgramButton');
-    const navbarElement = addProgramButton.parentElement;
-    
-    const newProgramTab = document.createElement('button');
-    newProgramTab.className = 'tab';
-    newProgramTab.textContent = `برنامه ${newProgramId}`;
-    newProgramTab.onclick = () => switchProgram(newProgramId);
-    
-    navbarElement.insertBefore(newProgramTab, addProgramButton);
-    
-    // Switch to new program
-    switchProgram(newProgramId);
-    saveToLocalStorage();
-}
+                return searchParts.some(part => searchableText.includes(part));
+            });
 
-// Initialize the first program and schedule
-initSchedule();
-function downloadSchedule() {
-    const scheduleElement = document.querySelector('.schedule');
-    
-    html2canvas(scheduleElement, {
-        backgroundColor: '#051d33',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: scheduleElement.offsetWidth,
-        height: scheduleElement.offsetHeight
-    }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'vahedino-schedule.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    });
-}
+            filteredCourses.forEach(course => {
+                const div = document.createElement('div');
+                div.className = 'course';
+                
+                const hasTime = hasValidTime(course);
+                if (!hasTime) {
+                    div.classList.add('course-no-time');
+                }
+                
+                div.innerHTML = `${course.name} (${course.code})<br>${course.prof}<br>${course.units} واحد<br>${course.department}`;
+                
+                if (hasTime) {
+                    div.onclick = () => selectCourse(course);
+                } else {
+                    div.onclick = () => alert('این درس زمان مشخصی ندارد');
+                }
+                
+                courseList.appendChild(div);
+            });
+        }
 
-</script>
+        function switchProgram(programId) {
+            currentProgramId = programId;
+            updateSchedule();
+            updateUnits();
+        }
+
+        function addNewProgram() {
+            const newProgramId = programs.length > 0 ? Math.max(...programs.map(p => p.id)) + 1 : 1;
+            const newProgram = { id: newProgramId, selectedCourses: [] };
+            programs.push(newProgram);
+            
+            // Update tabs
+            const addProgramButton = document.getElementById('addProgramButton');
+            const navbarElement = addProgramButton.parentElement;
+            
+            const newProgramTab = document.createElement('button');
+            newProgramTab.className = 'tab';
+            newProgramTab.textContent = `برنامه ${newProgramId}`;
+            newProgramTab.onclick = () => switchProgram(newProgramId);
+            
+            navbarElement.insertBefore(newProgramTab, addProgramButton);
+            
+            // Switch to new program
+            switchProgram(newProgramId);
+            saveToLocalStorage();
+        }
+
+        // Initialize the first program and schedule
+        initSchedule();
+        
+        function downloadSchedule() {
+            const scheduleElement = document.querySelector('.schedule');
+            
+            html2canvas(scheduleElement, {
+                backgroundColor: '#051d33',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                width: scheduleElement.offsetWidth,
+                height: scheduleElement.offsetHeight
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'vahedino-schedule.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        </script>
         <script
             src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
