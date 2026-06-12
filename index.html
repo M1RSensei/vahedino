@@ -790,7 +790,7 @@ table td:nth-child(2) {
         <div class="container">
             <div class="sidebar">
                 <select id="departmentSelect" class="department-select"
-                    onchange="filterCoursesByDepartment()">
+                    onchange="filterCoursesByDepartment()" aria-label="انتخاب دانشکده">
                     <option value>کلیه دانشکده ها</option>
                     <option value="دانشکده نقشه برداری">مهندسي نقشه
                         برداري</option>
@@ -810,7 +810,7 @@ table td:nth-child(2) {
                 </select>
 
                 <input type="text" id="searchBox" class="search-box"
-                    placeholder="جستجوی درس..." oninput="filterCourses()">
+                    placeholder="جستجوی درس..." oninput="filterCourses()" aria-label="جستجوی درس">
                 <div
                     style="background: #181818; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
                     تعداد واحد: <span id="units">0</span>
@@ -832,7 +832,7 @@ table td:nth-child(2) {
                     <tbody id="scheduleBody"></tbody>
 
                 </table>
-                <button onclick="downloadSchedule()" class="dl">
+                <button onclick="downloadSchedule()" class="dl" aria-label="دانلود برنامه هفتگی" title="دانلود برنامه هفتگی">
                     <svg width="24" height="24" viewBox="0 0 24 24"
                         fill="currentColor">
                         <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
@@ -984,7 +984,7 @@ window.addEventListener('load', setViewport);
                                 cell.innerHTML += `
                                     <div class="selected-course" style="height: ${heightInRows * 100}%">
                                         <span>${course.name} (${course.code})<br>${course.prof}</span>
-                                        <button class="remove-course" onclick="removeCourseById(${course.id})">&times;</button>
+                                        <button class="remove-course" onclick="removeCourseById(${course.id})" aria-label="حذف درس ${course.name}" title="حذف درس">&times;</button>
                                     </div>
                                 `;
                             }

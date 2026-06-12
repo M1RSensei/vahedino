@@ -1,0 +1,3 @@
+## 2026-06-12 - Missing Accessible Names on Core Interactive Elements
+**Learning:** The application extensively uses icon-only buttons (like the download/screenshot button) and dynamic form controls (department select, search box) without `aria-label`s or titles. This makes the primary actions completely invisible to screen reader users, and icon-only buttons lack tooltips for sighted users who may not immediately understand the icon's meaning.
+**Action:** Always ensure that icon-only buttons have an `aria-label` (for screen readers) and a `title` (for mouse hover tooltips), and that form inputs without visible labels have an `aria-label` describing their purpose.
